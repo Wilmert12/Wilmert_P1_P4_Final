@@ -35,7 +35,7 @@ public class AutoresController : ControllerBase
             return BadRequest();
 
         var nuevoId = await _autoresService.CreateAsync(autor);
-        var creado = autor with { Idautor = nuevoId };
+        var creado = autor with { IdAutor = nuevoId };
 
 
         return CreatedAtAction(nameof(ObtenerAutor), new { id = nuevoId }, creado);
@@ -47,7 +47,7 @@ public class AutoresController : ControllerBase
         if (autor is null)
             return BadRequest();
 
-        var autorActualizado = autor with { Idautor = id };
+        var autorActualizado = autor with { IdAutor = id };
         var actualizado = await _autoresService.UpdateAsync(autorActualizado);
         return actualizado ? NoContent() : NotFound();
     }

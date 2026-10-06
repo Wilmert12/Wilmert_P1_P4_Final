@@ -1,8 +1,8 @@
 namespace Wilmert_P1_P4_Final.Models;
 
 public record AutoresRecord(
-    int Idautor,
-    string Nombre,
+    int IdAutor,
+    string Nombres,
     string Nacionalidad,
     DateTime FechaNacimiento,
     float Sueldo)
