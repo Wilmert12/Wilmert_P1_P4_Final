@@ -37,7 +37,7 @@ public class AutoresController : ControllerBase
         var nuevoId = await _autoresService.CreateAsync(autor);
         var creado = autor with { Idautor = nuevoId };
 
-        // 201 Created + autor con su Id real + header Location al GET por id
+
         return CreatedAtAction(nameof(ObtenerAutor), new { id = nuevoId }, creado);
     }
 
