@@ -1,10 +1,11 @@
 using Dapper;
 using Microsoft.Data.Sqlite;
-using Parcial1_P4_Wilmert.Models;
+using Wilmert_P1_P4_Final.Models;
 
-namespace Parcial1_P4_Wilmert.Services;
 
-public class NumbersService(IConfiguration configuration)
+namespace Wilmert_P1_P4_Final.Services;
+
+public class AutoresServices(IConfiguration configuration)
 {
     private readonly string _connectionString =
         configuration.GetConnectionString("DefaultConnection")
@@ -16,62 +17,72 @@ public class NumbersService(IConfiguration configuration)
     public async Task InitializeAsync()
     {
         const string sql = @"
-            CREATE TABLE IF NOT EXISTS NumberRecords (
+            CREATE TABLE IF NOT EXISTS Autores (
                 Id        INTEGER PRIMARY KEY AUTOINCREMENT,
-                Fecha     TEXT    NOT NULL,
-                Numero    INTEGER NOT NULL,
-                Resultado INTEGER NOT NULL
+                Nombre       TEXT NOT NULL,
+                Apellido     TEXT NOT NULL,
+                Nacionalidad TEXT NOT NULL
             );";
 
         await using var connection = CreateConnection();
         await connection.ExecuteAsync(sql);
     }
 
-    public async Task<NumberRecord> SaveAsync(NumberRecord record)
+    public async Task<int> CreateAsync(AutoresRecord autor)
     {
         const string sql = @"
-            INSERT INTO NumberRecords (Fecha, Numero, Resultado)
-            VALUES (@Fecha, @Numero, @Resultado);
+            INSERT INTO Autores (Nombre, Apellido, Nacionalidad)
+            VALUES (@Nombre, @Apellido, @Nacionalidad);
             SELECT last_insert_rowid();";
 
         await using var connection = CreateConnection();
-        var nuevoId = await connection.ExecuteScalarAsync<long>(sql, record);
-
-        return record with { Id = (int)nuevoId };
+        return await connection.ExecuteScalarAsync<int>(sql, autor);
     }
 
-    public async Task<bool> UpdateAsync(NumberRecord record)
+    public async Task<bool> UpdateAsync(AutoresRecord autor)
     {
         const string sql = @"
-            UPDATE NumberRecords
-            SET Fecha = @Fecha, Numero = @Numero, Resultado = @Resultado
+            UPDATE Autores
+            SET Nombre = @Nombre, Apellido = @Apellido, Nacionalidad = @Nacionalidad
             WHERE Id = @Id;";
 
         await using var connection = CreateConnection();
-        var filasAfectadas = await connection.ExecuteAsync(sql, record);
+        var filasAfectadas = await connection.ExecuteAsync(sql, autor);
         return filasAfectadas > 0;
     }
 
-    public async Task<NumberRecord?> GetByIdAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
+    {
+        const string sql = "DELETE FROM Autores WHERE Id = @Id;";
+
+        await using var connection = CreateConnection();
+        var filasAfectadas = await connection.ExecuteAsync(sql, new { Id = id });
+        return filasAfectadas > 0;
+    }
+
+    public async Task<AutoresRecord> GetByIdAsync(int id)
     {
         const string sql = @"
-            SELECT Id, Fecha, Numero, Resultado
-            FROM NumberRecords
+            SELECT Id, Nombre, Apellido, Nacionalidad
+            FROM Autores
             WHERE Id = @Id;";
 
         await using var connection = CreateConnection();
-        return await connection.QuerySingleOrDefaultAsync<NumberRecord>(sql, new { Id = id });
+        return await connection.QuerySingleOrDefaultAsync<AutoresRecord>(sql, new { Id = id });
     }
 
-    public async Task<List<NumberRecord>> GetListAsync()
+    public async Task<List<AutoresRecord>> GetListAsync()
     {
         const string sql = @"
-            SELECT Id, Fecha, Numero, Resultado
-            FROM NumberRecords
-            ORDER BY Fecha DESC;";
+            SELECT Id, Nombre, Apellido, Nacionalidad
+            FROM Autores
+            ORDER BY Apellido, Nombre;";
 
         await using var connection = CreateConnection();
-        var result = await connection.QueryAsync<NumberRecord>(sql);
+        var result = await connection.QueryAsync<AutoresRecord>(sql);
         return result.ToList();
     }
 }
+
+
+

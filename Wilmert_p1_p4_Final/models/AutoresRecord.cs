@@ -1,4 +1,4 @@
-namespace Parcial1_P4_Wilmert.Models;
+namespace Wilmert_P1_P4_Final.Models;
 
 public record AutoresRecord(int Idautor,String nombre,string nacionalidad, DateTime Fecha, int Numero, float sueldo)
 {

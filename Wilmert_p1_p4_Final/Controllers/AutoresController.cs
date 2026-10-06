@@ -1,63 +1,58 @@
 using Microsoft.AspNetCore.Mvc;
-using Parcial1_P4_Wilmert.Models;
-using Parcial1_P4_Wilmert.Services;
+using Wilmert_P1_P4_Final.Models;
+using Wilmert_P1_P4_Final.Services;
 
-namespace Parcial1_P4_Wilmert.Controllers;
+namespace Wilmert_P1_P4_Final.Controllers;
+
 [ApiController]
 [Route("api/[controller]")]
 public class AutoresController : ControllerBase
 {
-    private readonly AutoresService _autoresService;
+	private readonly AutoresServices _autoresService;
 
-    public AutoresController(AutoresService autoresService)
-    {
-        _autoresService = autoresService;
-    }
+	public AutoresController(AutoresServices autoresService)
+	{
+		_autoresService = autoresService;
+	}
 
-    [HttpPost]
-    [ProducesResponseType(typeof(Autor), StatusCodes.Status201Created)]
-    public async Task<IActionResult> Crear([FromBody] Autor autor)
-    {
-        var guardado = await _autoresService.SaveAsync(autor);
-        return CreatedAtAction(nameof(GetById), new { id = guardado.Id }, guardado);
-    }
+	[HttpGet]
+	public async Task<IActionResult> ObtenerAutores()
+	{
+		return Ok(await _autoresService.GetListAsync());
+	}
 
-    [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(Autor), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetById(int id)
-    {
-        var autor = await _autoresService.GetByIdAsync(id);
-        return autor is null ? NotFound() : Ok(autor);
-    }
+	[HttpGet("{id:int}")]
+	public async Task<IActionResult> ObtenerAutor(int id)
+	{
+		var autor = await _autoresService.GetByIdAsync(id);
+		return autor is null ? NotFound() : Ok(autor);
+	}
 
-    [HttpGet]
-    [ProducesResponseType(typeof(List<Autor>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetList()
-    {
-        var autores = await _autoresService.GetListAsync();
-        return Ok(autores);
-    }
+	[HttpPost]
+	public async Task<IActionResult> CrearAutor([FromBody] AutoresRecord autor)
+	{
+		if (autor is null)
+			return BadRequest();
 
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> Actualizar(int id, [FromBody] Autor autor)
-    {
-        var existente = await _autoresService.GetByIdAsync(id);
-        if (existente is null)
-            return NotFound($"No existe el autor con Id {id}");
+		await _autoresService.CreateAsync(autor);
+		return Ok();
+	}
 
-        autor.Id = id;
-        await _autoresService.UpdateAsync(autor);
-        return Ok(autor);
-    }
+	[HttpPut("{id:int}")]
+	public async Task<IActionResult> ActualizarAutor(int id, [FromBody] AutoresRecord autor)
+	{
+		if (autor is null)
+			return BadRequest();
 
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Eliminar(int id)
-    {
-        var existente = await _autoresService.GetByIdAsync(id);
-        if (existente is null)
-            return NotFound($"No existe el autor con Id {id}");
+		var autorActualizado = autor with { Idautor = id };
+		var actualizado = await _autoresService.UpdateAsync(autorActualizado);
+		return actualizado ? NoContent() : NotFound();
+	}
 
-        await _autoresService.DeleteAsync(id);
-        return NoContent();
-    }
+	[HttpDelete("{id:int}")]
+	public async Task<IActionResult> EliminarAutor(int id)
+	{
+		var eliminado = await _autoresService.DeleteAsync(id);
+		return eliminado ? NoContent() : NotFound();
+	}
 }
