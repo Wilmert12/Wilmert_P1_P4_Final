@@ -17,12 +17,11 @@ public class AutoresServices(IConfiguration configuration)
     {
         const string sql = @"
             CREATE TABLE IF NOT EXISTS Autores (
-                Idautor      INTEGER PRIMARY KEY AUTOINCREMENT,
-                Nombre       TEXT    NOT NULL,
-                Nacionalidad TEXT    NOT NULL,
-                Fecha        TEXT    NOT NULL,
-                Numero       INTEGER NOT NULL,
-                Sueldo       REAL    NOT NULL
+                Idautor         INTEGER PRIMARY KEY AUTOINCREMENT,
+                Nombre          TEXT NOT NULL,
+                Nacionalidad    TEXT NOT NULL,
+                FechaNacimiento TEXT NOT NULL,
+                Sueldo          REAL NOT NULL
             );";
 
         await using var connection = CreateConnection();
@@ -32,8 +31,8 @@ public class AutoresServices(IConfiguration configuration)
     public async Task<int> CreateAsync(AutoresRecord autor)
     {
         const string sql = @"
-            INSERT INTO Autores (Nombre, Nacionalidad, Fecha, Numero, Sueldo)
-            VALUES (@Nombre, @Nacionalidad, @Fecha, @Numero, @Sueldo);
+            INSERT INTO Autores (Nombre, Nacionalidad, FechaNacimiento, Sueldo)
+            VALUES (@Nombre, @Nacionalidad, @FechaNacimiento, @Sueldo);
             SELECT last_insert_rowid();";
 
         await using var connection = CreateConnection();
@@ -44,11 +43,10 @@ public class AutoresServices(IConfiguration configuration)
     {
         const string sql = @"
             UPDATE Autores
-            SET Nombre       = @Nombre,
-                Nacionalidad = @Nacionalidad,
-                Fecha        = @Fecha,
-                Numero       = @Numero,
-                Sueldo       = @Sueldo
+            SET Nombre          = @Nombre,
+                Nacionalidad    = @Nacionalidad,
+                FechaNacimiento = @FechaNacimiento,
+                Sueldo          = @Sueldo
             WHERE Idautor = @Idautor;";
 
         await using var connection = CreateConnection();
@@ -68,7 +66,7 @@ public class AutoresServices(IConfiguration configuration)
     public async Task<AutoresRecord?> GetByIdAsync(int id)
     {
         const string sql = @"
-            SELECT Idautor, Nombre, Nacionalidad, Fecha, Numero, Sueldo
+            SELECT Idautor, Nombre, Nacionalidad, FechaNacimiento, Sueldo
             FROM Autores
             WHERE Idautor = @Id;";
 
@@ -79,7 +77,7 @@ public class AutoresServices(IConfiguration configuration)
     public async Task<List<AutoresRecord>> GetListAsync()
     {
         const string sql = @"
-            SELECT Idautor, Nombre, Nacionalidad, Fecha, Numero, Sueldo
+            SELECT Idautor, Nombre, Nacionalidad, FechaNacimiento, Sueldo
             FROM Autores
             ORDER BY Nombre;";
 
@@ -88,4 +86,3 @@ public class AutoresServices(IConfiguration configuration)
         return result.ToList();
     }
 }
-
