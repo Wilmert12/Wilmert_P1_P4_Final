@@ -1,0 +1,6 @@
+@Wilmert_p1_p4_Final_HostAddress = http://localhost:5133
+
+GET {{Wilmert_p1_p4_Final_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
