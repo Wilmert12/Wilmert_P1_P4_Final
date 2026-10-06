@@ -8,51 +8,54 @@ namespace Wilmert_P1_P4_Final.Controllers;
 [Route("api/[controller]")]
 public class AutoresController : ControllerBase
 {
-	private readonly AutoresServices _autoresService;
+    private readonly AutoresServices _autoresService;
 
-	public AutoresController(AutoresServices autoresService)
-	{
-		_autoresService = autoresService;
-	}
+    public AutoresController(AutoresServices autoresService)
+    {
+        _autoresService = autoresService;
+    }
 
-	[HttpGet]
-	public async Task<IActionResult> ObtenerAutores()
-	{
-		return Ok(await _autoresService.GetListAsync());
-	}
+    [HttpGet]
+    public async Task<IActionResult> ObtenerAutores()
+    {
+        return Ok(await _autoresService.GetListAsync());
+    }
 
-	[HttpGet("{id:int}")]
-	public async Task<IActionResult> ObtenerAutor(int id)
-	{
-		var autor = await _autoresService.GetByIdAsync(id);
-		return autor is null ? NotFound() : Ok(autor);
-	}
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> ObtenerAutor(int id)
+    {
+        var autor = await _autoresService.GetByIdAsync(id);
+        return autor is null ? NotFound() : Ok(autor);
+    }
 
-	[HttpPost]
-	public async Task<IActionResult> CrearAutor([FromBody] AutoresRecord autor)
-	{
-		if (autor is null)
-			return BadRequest();
+    [HttpPost]
+    public async Task<IActionResult> CrearAutor([FromBody] AutoresRecord autor)
+    {
+        if (autor is null)
+            return BadRequest();
 
-		await _autoresService.CreateAsync(autor);
-		return Ok();
-	}
+        var nuevoId = await _autoresService.CreateAsync(autor);
+        var creado = autor with { Idautor = nuevoId };
 
-	[HttpPut("{id:int}")]
-	public async Task<IActionResult> ActualizarAutor(int id, [FromBody] AutoresRecord autor)
-	{
-		if (autor is null)
-			return BadRequest();
+        // 201 Created + autor con su Id real + header Location al GET por id
+        return CreatedAtAction(nameof(ObtenerAutor), new { id = nuevoId }, creado);
+    }
 
-		var autorActualizado = autor with { Idautor = id };
-		var actualizado = await _autoresService.UpdateAsync(autorActualizado);
-		return actualizado ? NoContent() : NotFound();
-	}
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> ActualizarAutor(int id, [FromBody] AutoresRecord autor)
+    {
+        if (autor is null)
+            return BadRequest();
 
-	[HttpDelete("{id:int}")]
-	public async Task<IActionResult> EliminarAutor(int id)
-	{
-		var eliminado = await _autoresService.DeleteAsync(id);
-		return eliminado ? NoContent() : NotFound();
-	}
+        var autorActualizado = autor with { Idautor = id };
+        var actualizado = await _autoresService.UpdateAsync(autorActualizado);
+        return actualizado ? NoContent() : NotFound();
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> EliminarAutor(int id)
+    {
+        var eliminado = await _autoresService.DeleteAsync(id);
+        return eliminado ? NoContent() : NotFound();
+    }
 }

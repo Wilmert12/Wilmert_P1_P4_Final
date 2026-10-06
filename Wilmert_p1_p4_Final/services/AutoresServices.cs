@@ -2,7 +2,6 @@ using Dapper;
 using Microsoft.Data.Sqlite;
 using Wilmert_P1_P4_Final.Models;
 
-
 namespace Wilmert_P1_P4_Final.Services;
 
 public class AutoresServices(IConfiguration configuration)
@@ -18,10 +17,12 @@ public class AutoresServices(IConfiguration configuration)
     {
         const string sql = @"
             CREATE TABLE IF NOT EXISTS Autores (
-                Id        INTEGER PRIMARY KEY AUTOINCREMENT,
-                Nombre       TEXT NOT NULL,
-                Apellido     TEXT NOT NULL,
-                Nacionalidad TEXT NOT NULL
+                Idautor      INTEGER PRIMARY KEY AUTOINCREMENT,
+                Nombre       TEXT    NOT NULL,
+                Nacionalidad TEXT    NOT NULL,
+                Fecha        TEXT    NOT NULL,
+                Numero       INTEGER NOT NULL,
+                Sueldo       REAL    NOT NULL
             );";
 
         await using var connection = CreateConnection();
@@ -31,8 +32,8 @@ public class AutoresServices(IConfiguration configuration)
     public async Task<int> CreateAsync(AutoresRecord autor)
     {
         const string sql = @"
-            INSERT INTO Autores (Nombre, Apellido, Nacionalidad)
-            VALUES (@Nombre, @Apellido, @Nacionalidad);
+            INSERT INTO Autores (Nombre, Nacionalidad, Fecha, Numero, Sueldo)
+            VALUES (@Nombre, @Nacionalidad, @Fecha, @Numero, @Sueldo);
             SELECT last_insert_rowid();";
 
         await using var connection = CreateConnection();
@@ -43,8 +44,12 @@ public class AutoresServices(IConfiguration configuration)
     {
         const string sql = @"
             UPDATE Autores
-            SET Nombre = @Nombre, Apellido = @Apellido, Nacionalidad = @Nacionalidad
-            WHERE Id = @Id;";
+            SET Nombre       = @Nombre,
+                Nacionalidad = @Nacionalidad,
+                Fecha        = @Fecha,
+                Numero       = @Numero,
+                Sueldo       = @Sueldo
+            WHERE Idautor = @Idautor;";
 
         await using var connection = CreateConnection();
         var filasAfectadas = await connection.ExecuteAsync(sql, autor);
@@ -53,19 +58,19 @@ public class AutoresServices(IConfiguration configuration)
 
     public async Task<bool> DeleteAsync(int id)
     {
-        const string sql = "DELETE FROM Autores WHERE Id = @Id;";
+        const string sql = "DELETE FROM Autores WHERE Idautor = @Id;";
 
         await using var connection = CreateConnection();
         var filasAfectadas = await connection.ExecuteAsync(sql, new { Id = id });
         return filasAfectadas > 0;
     }
 
-    public async Task<AutoresRecord> GetByIdAsync(int id)
+    public async Task<AutoresRecord?> GetByIdAsync(int id)
     {
         const string sql = @"
-            SELECT Id, Nombre, Apellido, Nacionalidad
+            SELECT Idautor, Nombre, Nacionalidad, Fecha, Numero, Sueldo
             FROM Autores
-            WHERE Id = @Id;";
+            WHERE Idautor = @Id;";
 
         await using var connection = CreateConnection();
         return await connection.QuerySingleOrDefaultAsync<AutoresRecord>(sql, new { Id = id });
@@ -74,15 +79,13 @@ public class AutoresServices(IConfiguration configuration)
     public async Task<List<AutoresRecord>> GetListAsync()
     {
         const string sql = @"
-            SELECT Id, Nombre, Apellido, Nacionalidad
+            SELECT Idautor, Nombre, Nacionalidad, Fecha, Numero, Sueldo
             FROM Autores
-            ORDER BY Apellido, Nombre;";
+            ORDER BY Nombre;";
 
         await using var connection = CreateConnection();
         var result = await connection.QueryAsync<AutoresRecord>(sql);
         return result.ToList();
     }
 }
-
-
 
