@@ -1,0 +1,22 @@
+@host = http://localhost:5133
+
+GET {{host}}/api/autores
+Accept: application/json
+
+###
+GET {{host}}/api/autores/1
+
+###
+POST {{host}}/api/autores
+Content-Type: application/json
+
+{ "nombres": "Julia Alvarez", "nacionalidad": "Dominicana", "fechaNacimiento": "1950-03-27", "sueldo": 3000 }
+
+###
+PUT {{host}}/api/autores/1
+Content-Type: application/json
+
+{ "nombres": "Julia Alvarez", "nacionalidad": "Dominicana", "fechaNacimiento": "1950-03-27", "sueldo": 3500 }
+
+###
+DELETE {{host}}/api/autores/1

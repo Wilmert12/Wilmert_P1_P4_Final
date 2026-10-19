@@ -10,6 +10,17 @@ builder.Services.AddScoped<AutoresServices>();
 
 var app = builder.Build();
 
+// TEMPORAL: muestra el mensaje real del error en la respuesta (borrar al terminar)
+app.Use(async (ctx, next) =>
+{
+    try { await next(); }
+    catch (Exception ex)
+    {
+        ctx.Response.StatusCode = 500;
+        await ctx.Response.WriteAsync(ex.ToString());
+    }
+});
+
 using (var scope = app.Services.CreateScope())
 {
     var autoresService = scope.ServiceProvider.GetRequiredService<AutoresServices>();

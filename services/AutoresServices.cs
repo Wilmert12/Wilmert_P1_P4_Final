@@ -6,10 +6,28 @@ namespace Wilmert_P1_P4_Final.Services;
 
 public class AutoresServices(IConfiguration configuration)
 {
-    private readonly string _connectionString =
-        configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException(
-            "Falta 'DefaultConnection' en appsettings.json");
+    private readonly string _connectionString = BuildConnectionString(configuration);
+
+    private static string BuildConnectionString(IConfiguration configuration)
+    {
+        var cs = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException(
+                "Falta 'DefaultConnection' en appsettings.json");
+
+       
+        var enAzure = !string.IsNullOrEmpty(
+            Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+        var home = Environment.GetEnvironmentVariable("HOME");
+
+        if (enAzure && !string.IsNullOrEmpty(home))
+        {
+            var dir = Path.Combine(home, "data");
+            Directory.CreateDirectory(dir);
+            return $"Data Source={Path.Combine(dir, "autores.db")}";
+        }
+
+        return cs;
+    }
 
     private SqliteConnection CreateConnection() => new(_connectionString);
 
@@ -36,7 +54,13 @@ public class AutoresServices(IConfiguration configuration)
             SELECT last_insert_rowid();";
 
         await using var connection = CreateConnection();
-        return await connection.ExecuteScalarAsync<int>(sql, autor);
+        return await connection.ExecuteScalarAsync<int>(sql, new
+        {
+            Nombre = autor.Nombres,
+            autor.Nacionalidad,
+            FechaNacimiento = autor.FechaNacimiento.ToString("yyyy-MM-dd HH:mm:ss"),
+            autor.Sueldo
+        });
     }
 
     public async Task<bool> UpdateAsync(AutoresRecord autor)
@@ -50,7 +74,14 @@ public class AutoresServices(IConfiguration configuration)
             WHERE Idautor = @Idautor;";
 
         await using var connection = CreateConnection();
-        var filasAfectadas = await connection.ExecuteAsync(sql, autor);
+        var filasAfectadas = await connection.ExecuteAsync(sql, new
+        {
+            Idautor = autor.IdAutor,
+            Nombre = autor.Nombres,
+            autor.Nacionalidad,
+            FechaNacimiento = autor.FechaNacimiento.ToString("yyyy-MM-dd HH:mm:ss"),
+            autor.Sueldo
+        });
         return filasAfectadas > 0;
     }
 
@@ -66,7 +97,7 @@ public class AutoresServices(IConfiguration configuration)
     public async Task<AutoresRecord?> GetByIdAsync(int id)
     {
         const string sql = @"
-            SELECT Idautor, Nombre, Nacionalidad, FechaNacimiento, Sueldo
+            SELECT Idautor AS IdAutor, Nombre AS Nombres, Nacionalidad, FechaNacimiento, Sueldo
             FROM Autores
             WHERE Idautor = @Id;";
 
@@ -77,7 +108,7 @@ public class AutoresServices(IConfiguration configuration)
     public async Task<List<AutoresRecord>> GetListAsync()
     {
         const string sql = @"
-            SELECT Idautor, Nombre, Nacionalidad, FechaNacimiento, Sueldo
+            SELECT Idautor AS IdAutor, Nombre AS Nombres, Nacionalidad, FechaNacimiento, Sueldo
             FROM Autores
             ORDER BY Nombre;";
 
